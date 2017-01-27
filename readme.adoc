@@ -1,0 +1,61 @@
+Stereoscopic Rendering
+======================
+:author:    Antonio Caggiano
+:email:     infoantoniocaggiano@gmail.com
+:revdate:   January 27, 2017
+:revnumber: 0.1.0
+:backend:   slidy
+:max-width: 45em
+:data-uri:
+:icons:
+
+
+
+
+Summary
+--------
+[role="incremental"]
+. 3DTV
+. Stereoscopic Rendering
+. SunSpoT
+
+
+3DTV
+----
+image::images/3dtv.png[float="right"]
+
+[role="incremental"]
+- Next-generation product
+- Depth without glasses
+- Lenticular lens technology
+
+
+
+Philips 3D Interface Specifications
+-----------------------------------
+https://www.vrlab.ctw.utwente.nl/eq/Documentation/3ddisplay_3DInterfaceWhitePaper.pdf[White Paper]
+
+[role="incremental"]
+- Data format
+[role="incremental"]
+  * 2D-plus-Depth
+  * Declipse
+
+
+2D-plus-Depth
+-------------
+[role="incremental"]
+image::images/2d-plus-depth.png[float="right"]
+
+[role="incremental"]
+- Header
+- Color sub-image
+- Depth sub-image
+
+[role="incremental"]
+.Frame details
+image::images/2d-plus-depth-details.png[Frame details]
+
+[role="incremental"]
+.Header details
+image::images/2d-plus-depth-header.png[Header details]
