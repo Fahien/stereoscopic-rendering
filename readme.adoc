@@ -44,7 +44,6 @@ https://www.vrlab.ctw.utwente.nl/eq/Documentation/3ddisplay_3DInterfaceWhitePape
 
 2D-plus-Depth
 -------------
-[role="incremental"]
 image::images/2d-plus-depth.png[float="right"]
 
 [role="incremental"]
@@ -59,3 +58,181 @@ image::images/2d-plus-depth-details.png[Frame details]
 [role="incremental"]
 .Header details
 image::images/2d-plus-depth-header.png[Header details]
+
+
+Dimenco DM654MAS
+----------------
+image::images/dimenco.png[float="right"]
+
+[role="incremental"]
+- 65” (165cm)
+- QFHD (3840x2160)
+- UHD (4096x2160)
+- 3D/2D mode
+
+Stereoscopic Rendering
+----------------------
+What do we need?
+[role="incremental"]
+- Draw the scene to generate
+  * color image
+  * depth image
+[role="incremental"]
+- Make a 2D-plus-Depth frame
+  * color on the left
+  * depth on the right
+  * header on top
+
+[role="incremental"]
+IMPORTANT: How can we generate a color and a depth image?
+[role="incremental"]
+- Framebuffer Object
+  * Color texture attachment
+  * Depth texture attachment
+
+
+Framebuffer
+-----------
+[source,cpp]
+---------------------------------------------------------------------
+// Framebuffer size
+Size size{ 1920, 1080 };
+
+// Create a framebuffer object
+GLuint fbo;
+glGenFramebuffers(1, &fbo);
+glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+---------------------------------------------------------------------
+
+Color Texture
+-------------
+[source,cpp]
+---------------------------------------------------------------------
+// Create a texture for colors
+GLuint colorTexture;
+glGenTextures(1, &colorTexture);
+glBindTexture(GL_TEXTURE_2D, colorTexture);
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.width, size.height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
+---------------------------------------------------------------------
+
+Depth Texture
+-------------
+[source,cpp]
+---------------------------------------------------------------------
+// Create a texture for depth
+GLuint depthTexture;
+glGenTextures(1, &depthTexture);
+glBindTexture(GL_TEXTURE_2D, depthTexture);
+glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size.width, size.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+---------------------------------------------------------------------
+
+Error Check
+-----------
+[source,cpp]
+---------------------------------------------------------------------
+if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
+	std::cout << "Framebuffer created\n";
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+else {
+	glDeleteTextures(1, &depthTexture);
+	glDeleteTextures(1, &colorTexture);
+	glDeleteFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	throw FramebufferException{ "Creation failed" };
+}
+---------------------------------------------------------------------
+
+Draw on the Framebuffer
+-----------------------
+[source,cpp]
+---------------------------------------------------------------------
+glEnable(GL_DEPTH_TEST);
+glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+glViewport(0, 0, size.width, size.height);
+/*
+	Drawing commands ...
+*/
+glBindFramebuffer(GL_FRAMEBUFFER, 0);
+---------------------------------------------------------------------
+
+Render Passes
+-------------
+[role="incremental"]
+. Draw the scene on the framebuffer
+[role="incremental"]
+. Draw the frame on the default framebuffer
+  * Color on the left
+  * Depth on the right
+  * Header on top
+
+[role="incremental"]
+IMPORTANT: How do we draw a texture on the default framebuffer?
+[role="incremental"]
+- A quad and two viewports!
+
+Quad
+----
+[source,cpp]
+---------------------------------------------------------------------
+GLuint quadVBO; // Generate a vertex buffer object
+glGenBuffers(1, &quadVBO);
+
+GLuint quadEBO; // Generate a element buffer object
+glGenBuffers(1, &quadEBO);
+
+GLuint quadVAO; // Generate a vertex array object
+glGenVertexArrays(1, &quadVAO);
+glBindVertexArray(quadVAO);
+
+// Copy the vertices in the buffer
+glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+GLfloat vertices[] = {
+	// Positions  // TexCoords
+	-1.0f, -1.0f, 0.0, 0.0, // Bottom left
+	 1.0f, -1.0f, 1.0, 0.0, // Bottom right
+	 1.0f,  1.0f, 1.0, 1.0, // Top right
+	-1.0f,  1.0f, 0.0, 1.0  // Top left
+};
+glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
+
+// Copy the indices in the buffer
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
+GLuint indices[] = {
+	0, 1, 2,
+	0, 2, 3
+};
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
+
+// Specify the vertex shader input in the form of vertex attributes
+glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid *)0);
+glEnableVertexAttribArray(0);
+glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid *)(2 * sizeof(GLfloat)));
+glEnableVertexAttribArray(1);
+
+glBindVertexArray(0);
+---------------------------------------------------------------------
+
+Draw on the default framebuffer
+-------------------------------
+[source,cpp]
+---------------------------------------------------------------------
+Size windowSize{ 3840, 2160 };
+glDisable(GL_DEPTH_TEST);
+glBindVertexArray(quadVAO);
+glViewport(0, 0, windowSize.width / 2, windowSize.height);
+/*
+	Draw the color texture ...
+*/
+glViewport(windowSize.width / 2, 0, windowSize.width / 2, windowSize.height);
+/*
+	Draw the depth texture ...
+*/
+glBindVertexArray(0);
+---------------------------------------------------------------------
