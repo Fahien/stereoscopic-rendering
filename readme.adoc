@@ -236,3 +236,18 @@ glViewport(windowSize.width / 2, 0, windowSize.width / 2, windowSize.height);
 */
 glBindVertexArray(0);
 ---------------------------------------------------------------------
+
+SunSpoT
+-------
+image::images/sunspot.png[float="right"]
+
+3D engine written in C++
+
+[role="incremental"]
+- Open-source
+- Cross-platform
+- Obj loader
+- Phong lighting model
+
+[role="incremental"]
+https://github.com/Fahien/sunspot[Fork it on GitHub!]
