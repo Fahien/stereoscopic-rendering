@@ -369,6 +369,11 @@ void main()
 }
 ---------------------------------------------------------------------
 
+Overhead
+--------
+.Stereoscopic rendering overhead
+image::images/overhead.png[]
+
 SunSpoT
 -------
 image::images/sunspot.png[float="right"]
