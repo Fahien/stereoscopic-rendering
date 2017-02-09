@@ -107,6 +107,9 @@ IMPORTANT: How can we generate a color and a depth image?
 
 Framebuffer
 -----------
+.Framebuffer attachments
+image::images/framebuffer.png[width="80%",alt="Framebuffer"]
+
 [source,cpp]
 ---------------------------------------------------------------------
 // Framebuffer size
@@ -116,12 +119,7 @@ Size size{ 1920, 1080 };
 GLuint fbo;
 glGenFramebuffers(1, &fbo);
 glBindFramebuffer(GL_FRAMEBUFFER, fbo);
----------------------------------------------------------------------
 
-Color Texture
--------------
-[source,cpp]
----------------------------------------------------------------------
 // Create a texture for colors
 GLuint colorTexture;
 glGenTextures(1, &colorTexture);
@@ -132,12 +130,7 @@ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
 		colorTexture, 0);
----------------------------------------------------------------------
 
-Depth Texture
--------------
-[source,cpp]
----------------------------------------------------------------------
 // Create a texture for depth
 GLuint depthTexture;
 glGenTextures(1, &depthTexture);
@@ -148,12 +141,7 @@ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
 		depthTexture, 0);
----------------------------------------------------------------------
 
-Error Check
------------
-[source,cpp]
----------------------------------------------------------------------
 if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
 	std::cout << "Framebuffer created\n";
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -303,6 +291,9 @@ glBindVertexArray(0);
 
 Draw on the default framebuffer
 -------------------------------
+.Second pass
+image::images/viewports.png[width="80%",alt="Second pass"]
+
 [source,cpp]
 ---------------------------------------------------------------------
 Size windowSize{ 3840, 2160 };
