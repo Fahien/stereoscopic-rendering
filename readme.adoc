@@ -1,9 +1,9 @@
-Stereoscopic Rendering
-======================
+Tecniche di rendering stereoscopico
+===================================
 :author:    Antonio Caggiano
 :email:     infoantoniocaggiano@gmail.com
-:revdate:   January 27, 2017
-:revnumber: 0.1.0
+:revdate:   10 Febbraio 2017
+:revnumber: 0.2.0
 :backend:   slidy
 :max-width: 45em
 :data-uri:
@@ -12,13 +12,13 @@ Stereoscopic Rendering
 
 
 
-Summary
+Sommario
 --------
 [role="incremental"]
-. 3DTV
-. OpenGL
-. Stereoscopic Rendering
-. SunSpoT
+. 3DTV - monitor autostereoscopico che aggiunge profondità
+. OpenGL - libreria grafica utilizzata
+. Rendering stereoscopico - tecnica per la creazione del frame
+. SunSpoT - applicazione dimostrativa
 
 
 3DTV
@@ -26,9 +26,9 @@ Summary
 image::images/3dtv.png[float="right"]
 
 [role="incremental"]
-- Next-generation product
-- Depth without glasses
-- Lenticular lens technology
+- Prodotto di prossima generazione
+- Profondità senza occhiali 3D
+- Tecnologia _lenticular lens_
 
 
 Philips 3D Interface Specifications
@@ -36,7 +36,7 @@ Philips 3D Interface Specifications
 https://www.vrlab.ctw.utwente.nl/eq/Documentation/3ddisplay_3DInterfaceWhitePaper.pdf[White Paper]
 
 [role="incremental"]
-- Data format
+- Formato del frame
 [role="incremental"]
   * 2D-plus-Depth
   * Declipse
@@ -52,12 +52,12 @@ image::images/2d-plus-depth.png[float="right"]
 - Depth sub-image
 
 [role="incremental"]
-.Frame details
-image::images/2d-plus-depth-details.png[Frame details]
+.Dettaglio del frame
+image::images/2d-plus-depth-details.png[Dettaglio del frame]
 
 [role="incremental"]
-.Header details
-image::images/2d-plus-depth-header.png[Header details]
+.Dettaglio dell'header
+image::images/2d-plus-depth-header.png[Dettaglio dell'header]
 
 
 Dimenco DM654MAS
@@ -66,39 +66,38 @@ image::images/dimenco.png[float="right"]
 
 [role="incremental"]
 - 65” (165cm)
-- QFHD (3840x2160)
-- UHD (4096x2160)
+- QFHD (3840x2160) o UHD (4096x2160)
 - 3D/2D mode
 
 
 OpenGL
 ------
-In general, contents for stereoscopic displays are generated
-by computer graphics tecniques, because depth
-information can be easily obtained.
+Generalmente, i contenuti per display autostereoscopici sono
+generati attraverso tecniche di computer grafica, poiché le
+informazioni sulla profondità sono facilmente ottenibili.
 
-*OpenGL* is a cross-language, cross-platform rendering API.
+*OpenGL* è una rendering API cross-language e cross-platform.
 
-Applications use it extensively in the fields of _computer-aided
-design_, _virtual reality_, and _video games_.
+È largamente utilizzata nei campi della _computer-aided design_,
+ _realtà virtuale_, e nei _videogiochi_.
 
-I'm going to use it in order to achieve _stereoscopic rendering_.
+Utilizzo questa tecnologia per effettuare il _rendering stereoscopico_.
 
-Stereoscopic Rendering
-----------------------
-What do we need?
+Rendering stereoscopico
+-----------------------
+Di cosa abbiamo bisogno?
 [role="incremental"]
-- Draw the scene to generate
+- Disegnare la scena per generare
   * color image
-  * depth image
+  * depth image 
 [role="incremental"]
-- Make a 2D-plus-Depth frame
-  * color on the left
-  * depth on the right
-  * header on top
+- Creare un frame 2D-plus-Depth
+  * colore a sinistra
+  * profondità a destra
+  * header in alto
 
 [role="incremental"]
-IMPORTANT: How can we generate a color and a depth image?
+IMPORTANT: Come possiamo generare un'immagine con il colore e una con la profondità?
 [role="incremental"]
 - Framebuffer Object
   * Color texture attachment
@@ -110,60 +109,16 @@ Framebuffer
 .Framebuffer attachments
 image::images/framebuffer.png[width="80%",alt="Framebuffer"]
 
-[source,cpp]
----------------------------------------------------------------------
-// Framebuffer size
-Size size{ 1920, 1080 };
 
-// Create a framebuffer object
-GLuint fbo;
-glGenFramebuffers(1, &fbo);
-glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-// Create a texture for colors
-GLuint colorTexture;
-glGenTextures(1, &colorTexture);
-glBindTexture(GL_TEXTURE_2D, colorTexture);
-glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size.width, size.height, 0, GL_RGB,
-		GL_UNSIGNED_BYTE, nullptr);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-		colorTexture, 0);
-
-// Create a texture for depth
-GLuint depthTexture;
-glGenTextures(1, &depthTexture);
-glBindTexture(GL_TEXTURE_2D, depthTexture);
-glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size.width, size.height,
-		0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-		depthTexture, 0);
-
-if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
-	std::cout << "Framebuffer created\n";
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-else {
-	glDeleteTextures(1, &depthTexture);
-	glDeleteTextures(1, &colorTexture);
-	glDeleteFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	throw FramebufferException{ "Creation failed" };
-}
----------------------------------------------------------------------
-
-Draw on the Framebuffer
------------------------
+Disegnare nel Framebuffer
+-------------------------
 [source,cpp]
 ---------------------------------------------------------------------
 glEnable(GL_DEPTH_TEST);
 glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 glViewport(0, 0, size.width, size.height);
 /*
-	Drawing commands ...
+	Comandi di disegno ...
 */
 glBindFramebuffer(GL_FRAMEBUFFER, 0);
 ---------------------------------------------------------------------
@@ -176,8 +131,7 @@ image::images/phong.png[]
 [source,cpp]
 ---------------------------------------------------------------------
 // GLSL code
-const float zero = 0.0f;
-const float one = 1.0f;
+// ...
 
 struct Material {
 	vec3 ambient;
@@ -188,29 +142,9 @@ struct Material {
 	sampler2D specularMap;
 };
 
-struct Light {
-	vec3 position;
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
-};
-
-struct Camera {
-	vec3 position;
-};
-
-uniform Light light;
-uniform Camera camera;
-uniform Material material;
-
-in vec3 position;
-in vec3 normal;
-in vec2 texCoords;
-
-out vec4 color;
-
 void main()
 {
+	// Influisce nella componente ambient e diffuse
 	vec3 fragment = vec3(texture(material.diffuseMap, texCoords));
 
 	vec3 ambient = light.ambient * material.ambient * fragment;
@@ -230,89 +164,46 @@ void main()
 }
 ---------------------------------------------------------------------
 
-Render Passes
--------------
+Passi di rendering
+------------------
 [role="incremental"]
-. Draw the scene on the framebuffer
+. Disegna la scena nel framebuffer
 [role="incremental"]
-. Draw the frame on the default framebuffer
-  * Color on the left
-  * Depth on the right
+. Disegna il frame nel default framebuffer
+  * Colore a sinistra
+  * Profondità a destra
   * Header on top
 
 [role="incremental"]
-IMPORTANT: How do we draw a texture on the default framebuffer?
+IMPORTANT: Come possiamo disegnare due texture affiancate nel the default framebuffer?
 [role="incremental"]
 - A quad and two viewports!
 
-Quad
-----
-[source,cpp]
----------------------------------------------------------------------
-GLuint quadVBO; // Generate a vertex buffer object
-glGenBuffers(1, &quadVBO);
 
-GLuint quadEBO; // Generate a element buffer object
-glGenBuffers(1, &quadEBO);
-
-GLuint quadVAO; // Generate a vertex array object
-glGenVertexArrays(1, &quadVAO);
-glBindVertexArray(quadVAO);
-
-// Copy the vertices in the buffer
-glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-GLfloat vertices[] = {
-	// Positions  // TexCoords
-	-1.0f, -1.0f, 0.0, 0.0, // Bottom left
-	 1.0f, -1.0f, 1.0, 0.0, // Bottom right
-	 1.0f,  1.0f, 1.0, 1.0, // Top right
-	-1.0f,  1.0f, 0.0, 1.0  // Top left
-};
-glBufferData(GL_ARRAY_BUFFER, sizeof vertices, vertices, GL_STATIC_DRAW);
-
-// Copy the indices in the buffer
-glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
-GLuint indices[] = {
-	0, 1, 2,
-	0, 2, 3
-};
-glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof indices, indices, GL_STATIC_DRAW);
-
-// Specify the vertex shader input in the form of vertex attributes
-glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
-		(GLvoid *)0);
-glEnableVertexAttribArray(0);
-glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
-		(GLvoid *)(2 * sizeof(GLfloat)));
-glEnableVertexAttribArray(1);
-
-glBindVertexArray(0);
----------------------------------------------------------------------
-
-Draw on the default framebuffer
--------------------------------
-.Second pass
-image::images/viewports.png[width="80%",alt="Second pass"]
+Disegnare nel default framebuffer
+---------------------------------
+.Secondo passo
+image::images/viewports.png[width="80%",alt="Secondo passo"]
 
 [source,cpp]
 ---------------------------------------------------------------------
-Size windowSize{ 3840, 2160 };
+Size windowSize{ 3840, 2160 }; // QFHL
 glDisable(GL_DEPTH_TEST);
 glBindVertexArray(quadVAO);
 glViewport(0, 0, windowSize.width / 2, windowSize.height);
 /*
-	Draw the color texture ...
+	Disegna la color texture ...
 */
 glViewport(windowSize.width / 2, 0, windowSize.width / 2, windowSize.height);
 /*
-	Draw the depth texture ...
+	Disegna la depth texture ...
 */
 glBindVertexArray(0);
 ---------------------------------------------------------------------
 
-Draw the color texture and the header
--------------------------------------
-The header texture will be _clamped to edge_.
+Disegna la color texture e l'header
+-----------------------------------
+La texture dell'header sarà _clamped to edge_.
 [source,c]
 ---------------------------------------------------------------------
 // GLSL code
@@ -333,27 +224,16 @@ void main()
 }
 ---------------------------------------------------------------------
 
-Draw the depth texture
-----------------------
-The Philips white paper contains a section with a formula which helps
-us to translate a depth value within the [0,1] range into a [0, 255]
-_disparity_ suitable for the 2D-plus-Depth format.
+Disegnare la depth texture
+--------------------------
+Il white paper della Philips contiene una sezione con una formula che
+ci aiuta a trasformare un valore di profondità nel range [0,1] in una
+_disparity_ nel range [0, 255] adatta al formato 2D-plus-Depth.
 
 [source,c]
 ---------------------------------------------------------------------
 // GLSL code
-
-// Philips white paper constants
-const float Zd = 0.467481; // Display pane depth
-const float vz = 7.655192; // View distance in coordinate units
-const float M = -1960.37; // Linear function multiplier
-const float C = 127.5; // Linear function constant
-
-uniform sampler2D depthTexture;
-
-in vec2 texCoords;
-
-out vec4 color;
+// ...
 
 // Philips white paper formula
 float disparity(float z)
@@ -371,14 +251,14 @@ void main()
 
 Overhead
 --------
-.Stereoscopic rendering overhead
+.Overhead del rendering stereoscopico
 image::images/overhead.png[]
 
 SunSpoT
 -------
 image::images/sunspot.png[float="right"]
 
-3D engine written in C++
+Applicazione 3D scritta in C++
 
 [role="incremental"]
 - Open-source
