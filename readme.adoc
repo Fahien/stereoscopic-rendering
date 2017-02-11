@@ -114,9 +114,10 @@ Disegnare nel Framebuffer
 -------------------------
 [source,cpp]
 ---------------------------------------------------------------------
+Size frameSize{ 1920, 1080 }; // FHD
 glEnable(GL_DEPTH_TEST);
 glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-glViewport(0, 0, size.width, size.height);
+glViewport(0, 0, frameSize.width, frameSize.height);
 /*
 	Comandi di disegno ...
 */
@@ -172,12 +173,12 @@ Passi di rendering
 . Disegna il frame nel default framebuffer
   * Colore a sinistra
   * Profondità a destra
-  * Header on top
+  * Header in alto
 
 [role="incremental"]
 IMPORTANT: Come possiamo disegnare due texture affiancate nel the default framebuffer?
 [role="incremental"]
-- A quad and two viewports!
+- Un quad e due viewport!
 
 
 Disegnare nel default framebuffer
@@ -201,15 +202,16 @@ glViewport(windowSize.width / 2, 0, windowSize.width / 2, windowSize.height);
 glBindVertexArray(0);
 ---------------------------------------------------------------------
 
-Disegna la color texture e l'header
------------------------------------
-La texture dell'header sarà _clamped to edge_.
+Disegnare la color texture e l'header
+-------------------------------------
+La texture dell'header ha _clamped to edge_ wrapping.
+
 [source,c]
 ---------------------------------------------------------------------
 // GLSL code
 uniform sampler2D colorTexture;
-uniform sampler2D headerTexture;
-uniform vec2 frameSize;
+uniform sampler2D headerTexture; // 960x2
+uniform vec2 frameSize; // FHD
 
 in vec2 texCoords;
 
@@ -248,6 +250,18 @@ void main()
 	color.r = color.g = color.b = disparity(color.r);
 }
 ---------------------------------------------------------------------
+
+Activity Diagram
+----------------
+.Activity diagram del rendering stereoscopico
+image::images/diagram.png[width="75%",alt="Activity Diagram"]
+
+
+Profiling
+---------
+.Profiling dei passi di rendering
+image::images/profiling.png[]
+
 
 Overhead
 --------
