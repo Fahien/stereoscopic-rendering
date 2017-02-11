@@ -369,6 +369,18 @@ void main()
 }
 ---------------------------------------------------------------------
 
+Activity Diagram
+----------------
+.Stereoscopic rendering activity diagram
+image::images/diagram.png[width="75%",alt="Activity Diagram"]
+
+
+Profiling
+---------
+.Profile stereoscopic rendering
+image::images/profiling.png[]
+
+
 Overhead
 --------
 .Stereoscopic rendering overhead
