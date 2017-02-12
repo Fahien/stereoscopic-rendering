@@ -8,7 +8,9 @@ Tecniche di rendering stereoscopico
 :max-width: 45em
 :data-uri:
 :icons:
-
+:linkcss:
+:stylesdir: css
+:scriptsdir: js
 
 
 
