@@ -178,7 +178,7 @@ Passi di rendering
   * Header in alto
 
 [role="incremental"]
-IMPORTANT: Come possiamo disegnare due texture affiancate nel the default framebuffer?
+IMPORTANT: Come possiamo disegnare due texture affiancate nel default framebuffer?
 [role="incremental"]
 - Un quad e due viewport!
 
